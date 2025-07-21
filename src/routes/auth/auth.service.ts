@@ -107,7 +107,7 @@ export class AuthService {
     const user = await this.prismaService.user.findUnique({
       where: { email },
     });
-  
+  // Check if user exists
     if (!user) {
       throw new UnauthorizedException('Email not found');
     }
