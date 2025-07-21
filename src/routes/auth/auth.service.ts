@@ -51,6 +51,30 @@ export class AuthService {
     return {success: true};    
   }
   async login(body: LoginDTO) {
+    const user = await this.prismaService.user.findUnique({
+      where: { email: body.email },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const isPasswordValid = await this.hashingService.compare(
+      body.password,
+      user.password,
+    );
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    if (!user.isEmailConfirmed) {
+      throw new UnauthorizedException(
+        'Email not verified, please check your email',
+      );
+    }
+
+    return this.generateTokens({ userId: user.id });
   } 
 
   async logout(refreshToken: string) {
