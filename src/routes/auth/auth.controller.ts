@@ -5,9 +5,11 @@ import {
     Get,
     HttpCode,
     Post,
-    Query
+    Query,
+    Res
 } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
 import {
     LoginDTO,
     LoginResDTO,
@@ -43,8 +45,24 @@ export class AuthController {
   @ApiOperation({ summary: 'User login' })
   @ApiResponse({ status: 200, type: LoginResDTO })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  async login(@Body() body: LoginDTO) {
-    const user = await this.authService.login(body);
+  async login(@Body() body: LoginDTO, @Res({ passthrough: true }) res: Response) {
+    const {tokens, user} = await this.authService.login(body);
+    res.cookie('access_token', tokens.accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+      });
+
+      res.cookie('refresh_token', tokens.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+      });
+
     return user;
   }
 

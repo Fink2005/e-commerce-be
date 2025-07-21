@@ -74,7 +74,13 @@ export class AuthService {
       );
     }
 
-    return this.generateTokens({ userId: user.id });
+    return {
+        tokens: await this.generateTokens({ userId: user.id }),
+        user: {
+          role: user.role,
+          isEmailConfirmed: user.isEmailConfirmed,
+        },
+    };
   } 
 
   async logout(refreshToken: string) {
