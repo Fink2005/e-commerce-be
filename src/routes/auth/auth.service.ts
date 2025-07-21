@@ -152,8 +152,8 @@ export class AuthService {
     if (!emailConfirmToken) {
       throw new UnauthorizedException('Email confirmation token not found');
     }
-  
-    const { error } = await this.emailService.sendEmail(email, emailConfirmToken);
+
+    const { error } = await this.emailService.sendEmail(email, user.name!, emailConfirmToken, 'verify');
   
     if (error) {
       throw new UnprocessableEntityException('Failed to send email');

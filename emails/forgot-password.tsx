@@ -1,13 +1,11 @@
 import { Button, Html, Img, Section, Text } from "@react-email/components";
 
-const forgotPassword = ({
+const ForgotPassword = ({
     forgotCode,
-    userEmail,
     userName ,
   }) => {
   return (
     <Html>
-
 <Section
   style={{ marginTop: '16px', textAlign: 'center', marginBottom: '16px' }}
 >
@@ -55,7 +53,7 @@ We received a request to reset your account password
     Hello, {userName}!
     </Text>
     <Button
-      href={`http://localhost:3000/reset-password?code=${forgotCode}&email=${userEmail}`}
+      href={`http://localhost:3000/reset-password?code=${forgotCode}`}
       style={{
          backgroundColor: '#10b981',
           color: '#ffffff',
@@ -98,4 +96,4 @@ Reset Password
   )
 }
 
-export default forgotPassword
+export default ForgotPassword
