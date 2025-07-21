@@ -118,7 +118,6 @@ export class AuthService {
         throw new UnauthorizedException('Refresh token expired');
       }
 
-
       await this.prismaService.refreshToken.delete({
         where: { 
           token: refreshToken,
@@ -191,8 +190,6 @@ export class AuthService {
     return { success: true, message: 'Email verified successfully' };
   }
 
-  
-  
   async generateTokens(payload: { userId: number }) {
     const [accessToken, refreshToken] = await Promise.all([
       this.tokenService.signAccessToken(payload),

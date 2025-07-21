@@ -27,11 +27,16 @@ model User {
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 
-  // ✅ Email confirmation fields
+  // Email confirmation
   isEmailConfirmed Boolean       @default(false)
   emailConfirmToken String?     @unique
   emailConfirmTokenExpiresAt DateTime?
 
+  // ✅ Forgot password
+  resetPasswordToken       String?     @unique
+  resetPasswordTokenExpiresAt DateTime?
+
+  // Relations
   customizations   Customization[]
   refreshTokens    RefreshToken[]
   specialOffers    SpecialOffer[]
