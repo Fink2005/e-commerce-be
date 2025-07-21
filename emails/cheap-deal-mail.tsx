@@ -13,7 +13,7 @@ import {
 interface CheapDealMailProps {
   loginCode?: string;
 }
-
+// 
 
   const logo = 'https://res.cloudinary.com/dwzi1o7b4/image/upload/v1753117622/cheapdeals_pykcac.png'
 
