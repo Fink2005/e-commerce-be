@@ -3,15 +3,16 @@ import fs from 'fs';
 import path from 'path';
 import { z } from 'zod';
 
-// Load .env
 const envPath = path.resolve('.env');
-if (!fs.existsSync(envPath)) {
-  console.log('Không tìm thấy file .env');
-  process.exit(1);
-}
-dotenv.config({ path: envPath });
 
-// Define Zod schema
+// Only load .env if it exists (for local dev)
+if (fs.existsSync(envPath)) {
+  dotenv.config({ path: envPath });
+} else {
+  console.warn('.env file not found — assuming environment variables are set externally (e.g. on Render)');
+}
+
+// Zod schema
 const ConfigSchema = z.object({
   DATABASE_URL: z.string().nonempty(),
   ACCESS_TOKEN_SECRET: z.string().nonempty(),
@@ -21,7 +22,7 @@ const ConfigSchema = z.object({
   REFRESH_TOKEN_EXPIRES_IN: z.string().nonempty(),
 });
 
-// Validate process.env
+// Validate
 const result = ConfigSchema.safeParse(process.env);
 
 if (!result.success) {
@@ -30,7 +31,5 @@ if (!result.success) {
   process.exit(1);
 }
 
-// Export the parsed and validated config
 const envConfig = result.data;
-
 export default envConfig;
