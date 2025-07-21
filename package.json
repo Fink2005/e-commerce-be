@@ -11,7 +11,7 @@
     "email:build": "email build",
     "email:export": "email export",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "nest start",
+    "start": "NODE_OPTIONS=--max-old-space-size=512 nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
