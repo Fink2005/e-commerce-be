@@ -1,12 +1,12 @@
 // main.ts
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-
+  app.use(cookieParser());
   // ✅ Swagger setup (optional if using @nestjs/swagger)
   const config = new DocumentBuilder()
     .setTitle('Auth API')

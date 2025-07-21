@@ -6,15 +6,14 @@ import {
     HttpCode,
     Post,
     Query,
+    Req,
     Res
 } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import {
     LoginDTO,
     LoginResDTO,
-    LogoutDTO,
-    LogoutResDTO,
     RefreshDTO,
     RefreshResDTO,
     RegisterDTO,
@@ -99,9 +98,25 @@ export class AuthController {
 
   @Post('logout')
   @ApiOperation({ summary: 'User logout' })
-  @ApiResponse({ status: 200, type: LogoutResDTO })
+  @ApiResponse({ status: 200, description: 'Logout successful' })
   @ApiResponse({ status: 401, description: 'Invalid refresh token' })
-  async logout(@Body() body: LogoutDTO) {
-    return await this.authService.logout(body.refreshToken);
+  async logout( @Res({ passthrough: true }) res: Response, @Req() req: Request) {
+    const refreshToken = req.cookies['refresh_token'];
+    res.clearCookie('access_token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+      });
+
+      res.clearCookie('refresh_token',  {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+      });
+    return await this.authService.logout(refreshToken);
   }
 }

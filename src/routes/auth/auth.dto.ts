@@ -60,9 +60,7 @@ export class RefreshDTO extends createZodDto(RefreshSchema) {
   @ApiProperty({ example: 'your-refresh-token-here' }) refreshToken: string;
 }
 
-export class LogoutDTO extends createZodDto(RefreshSchema) {
-  @ApiProperty({ example: 'your-refresh-token-here' }) refreshToken: string;
-}
+
 
 export class SendEmailDTO extends createZodDto(SendEmailSchema) {
     @ApiProperty({ example: 'your-email-here' })  email: string;
@@ -84,9 +82,7 @@ export class LoginResDTO extends createZodDto(TokenResponseSchema) {
 
 export class RefreshResDTO extends LoginResDTO {}
 
-export class LogoutResDTO extends createZodDto(MessageSchema) {
-  @ApiProperty({ example: 'Logout successful' }) message: string;
-}
+
 
 export class RegisterResDTO extends createZodDto(RegisterResSchema) {
   @ApiProperty({ example: 123 }) id: number;
