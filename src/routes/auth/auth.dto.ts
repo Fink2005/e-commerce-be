@@ -41,6 +41,19 @@ const SendEmailSchema = z.object({
     email: z.string().email().nonempty({ message: 'Email is required' }),
 })
 
+
+const ForgotPasswordSchema = z.object({
+    email: z.string().email().nonempty({ message: 'Email is required' }),
+})
+
+const VerifyPasswordSchema = z.object({
+    code: z.string().nonempty({ message: 'Verification code is required' }),
+});
+
+const NewPasswordSchema = z.object({
+    password: z.string().min(8, { message: 'Password must be at least 8 characters long' }),
+})
+
 // =======================
 // 📥 Input DTOs
 // =======================
