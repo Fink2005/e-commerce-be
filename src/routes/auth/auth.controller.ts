@@ -48,16 +48,16 @@ export class AuthController {
     const {tokens, user} = await this.authService.login(body);
     res.cookie('access_token', tokens.accessToken, {
         httpOnly: true,
-        // secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+       secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
         path: '/',
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
       });
 
       res.cookie('refresh_token', tokens.refreshToken, {
         httpOnly: true,
-        // secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+       secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
         path: '/',
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
       });
@@ -92,6 +92,13 @@ export class AuthController {
     @ApiResponse({ status: 200, description: 'Email verified successfully' })
     async verifyEmail(@Query() query: VerifyEmailDTO) {
       return await this.authService.verifyEmail(query.code);
+    }
+
+    @Post('forgot-password')
+    @ApiOperation({ summary: 'Send forgot password email' })
+    @ApiResponse({ status: 200, description: 'Forgot password email sent successfully', type: SendEmailDTO })
+    async forgotPassword(@Body() body: SendEmailDTO) {
+        return await this.authService.forgotPassword(body.email);
     }
     
 

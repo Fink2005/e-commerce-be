@@ -17,7 +17,7 @@ export class EmailService {
       from: 'Cheap Deals <noreply@fink.io.vn>',
       to: email,
       subject: type === 'verify' ? 'Verify your Cheap Deals account' : 'Reset your Cheap Deals password',
-      react:type ? <CheapDealMail loginCode={code}/> : <ForgotPassword forgotCode={code}  userName={name} />, 
+      react: type === 'verify' ? <CheapDealMail loginCode={code}/> : <ForgotPassword forgotCode={code}  userName={name} />, 
     });
     return result;
   }

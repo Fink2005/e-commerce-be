@@ -84,6 +84,17 @@ export class VerifyEmailDTO {
   code: string;
 }
 
+
+export class ForgotPasswordDTO extends createZodDto(ForgotPasswordSchema) {
+    @ApiProperty({example: 'your-email-here'}) email: string;
+}
+export class VerifyPasswordDTO extends createZodDto(VerifyPasswordSchema) {
+    @ApiProperty({ example: 'your-verification-code-here' }) code: string;
+}
+
+export class NewPasswordDTO extends createZodDto(NewPasswordSchema) {
+    @ApiProperty({ example: 'NewSecurePassword123!' }) password: string;
+}
 // =======================
 // 📤 Output DTOs
 // =======================

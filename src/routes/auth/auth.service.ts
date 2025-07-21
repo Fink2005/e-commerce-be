@@ -100,37 +100,6 @@ export class AuthService {
       throw new UnauthorizedException();
     }
   }
-  async refreshToken(refreshToken: string) {
-    try {
-      // 1 verify refresh token
-      const { userId } =
-        await this.tokenService.verifyRefreshToken(refreshToken);
-      const storedToken = await this.prismaService.refreshToken.findUniqueOrThrow({
-        where: {
-          token: refreshToken,
-        },
-      });
-
-      if (new Date() > storedToken.expiresAt) {
-        await this.prismaService.refreshToken.delete({
-          where: { token: refreshToken },
-        });
-        throw new UnauthorizedException('Refresh token expired');
-      }
-
-      await this.prismaService.refreshToken.delete({
-        where: { 
-          token: refreshToken,
-        },
-      });
-      return this.generateTokens({ userId });
-    } catch (error) {
-      if (isNotFoundPrismaError(error)) {
-        throw new UnauthorizedException('Refresh token has been revoked');
-      }
-      throw new UnauthorizedException();
-    }
-  }
 
   async sendEmail(email: string) {
     const user = await this.prismaService.user.findUnique({
@@ -189,6 +158,70 @@ export class AuthService {
 
     return { success: true, message: 'Email verified successfully' };
   }
+
+  async forgotPassword(email: string) {
+    const user = await this.prismaService.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Email not found');
+    }
+
+    const forgotPasswordToken = uuidv4();
+    const forgotPasswordTokenExpiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+    await this.prismaService.user.update({
+      where: { id: user.id },
+      data: {
+        resetPasswordToken: forgotPasswordToken,
+        resetPasswordTokenExpiresAt: forgotPasswordTokenExpiresAt,
+      },
+    });
+
+    const { error } = await this.emailService.sendEmail(email, user.name!, forgotPasswordToken, 'reset');
+  
+    if (error) {
+      throw new UnprocessableEntityException('Failed to send email');
+    }
+
+    return { success: true, message: 'Email sent successfully' };
+  }
+
+
+  async refreshToken(refreshToken: string) {
+    try {
+      // 1 verify refresh token
+      const { userId } =
+        await this.tokenService.verifyRefreshToken(refreshToken);
+      const storedToken = await this.prismaService.refreshToken.findUniqueOrThrow({
+        where: {
+          token: refreshToken,
+        },
+      });
+
+      if (new Date() > storedToken.expiresAt) {
+        await this.prismaService.refreshToken.delete({
+          where: { token: refreshToken },
+        });
+        throw new UnauthorizedException('Refresh token expired');
+      }
+
+      await this.prismaService.refreshToken.delete({
+        where: { 
+          token: refreshToken,
+        },
+      });
+      return this.generateTokens({ userId });
+    } catch (error) {
+      if (isNotFoundPrismaError(error)) {
+        throw new UnauthorizedException('Refresh token has been revoked');
+      }
+      throw new UnauthorizedException();
+    }
+  }
+
+
 
   async generateTokens(payload: { userId: number }) {
     const [accessToken, refreshToken] = await Promise.all([
