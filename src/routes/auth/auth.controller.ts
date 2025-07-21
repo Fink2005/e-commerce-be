@@ -14,12 +14,14 @@ import { Request, Response } from 'express';
 import {
     LoginDTO,
     LoginResDTO,
+    NewPasswordDTO,
     RefreshDTO,
     RefreshResDTO,
     RegisterDTO,
     RegisterResDTO,
     SendEmailDTO,
-    VerifyEmailDTO
+    VerifyEmailDTO,
+    VerifyPasswordDTO
 } from 'src/routes/auth/auth.dto';
 import { AuthService } from 'src/routes/auth/auth.service';
 
@@ -101,6 +103,25 @@ export class AuthController {
         return await this.authService.forgotPassword(body.email);
     }
     
+    @Get('verify-password')
+    @ApiOperation({ summary: 'Verify password reset code' })
+    @ApiQuery({
+      name: 'code',
+      required: true,
+      description: 'Password reset verification code',
+      example: 'your-verification-code-here',
+    })
+    @ApiResponse({ status: 200, description: 'Password reset code verified successfully' })
+    async verifyPassword(@Query() query: VerifyPasswordDTO) {
+      return await this.authService.verifyPassword(query.code);
+    }
+
+    @Post('new-password')
+    @ApiOperation({ summary: 'Set new password' })
+    @ApiResponse({ status: 200, description: 'New password set successfully' })
+    async newPassword(@Body() body: NewPasswordDTO   ) {
+      return await this.authService.newPassword(body.password, body.code);
+    }
 
 
   @Post('logout')

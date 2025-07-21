@@ -188,6 +188,56 @@ export class AuthService {
     return { success: true, message: 'Email sent successfully' };
   }
 
+  async verifyPassword(resetPasswordToken: string) {
+    const user = await this.prismaService.user.findFirst({
+      where: {
+        resetPasswordToken,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid or expired password reset token');
+    }
+
+    if (user.resetPasswordTokenExpiresAt
+        && user.resetPasswordTokenExpiresAt < new Date()) {
+      throw new UnauthorizedException('Password reset token has expired, please request a new one');
+    }
+
+    return { success: true, message: 'Password reset token verified successfully' };
+  }
+
+  async newPassword(password: string, resetPasswordToken: string) {
+    const user = await this.prismaService.user.findFirst({
+      where: {
+        resetPasswordToken,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid or expired password reset token');
+    }
+
+    if (user.resetPasswordTokenExpiresAt
+        && user.resetPasswordTokenExpiresAt < new Date()) {
+      throw new UnauthorizedException('Password reset token has expired, please request a new one');
+    }
+
+    const hashedPassword = await this.hashingService.hash(password);
+
+    await this.prismaService.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        resetPasswordToken: null,
+        resetPasswordTokenExpiresAt: null,
+      },
+    });
+
+    return { success: true, message: 'Password updated successfully' };
+        
+  }
+
 
   async refreshToken(refreshToken: string) {
     try {
