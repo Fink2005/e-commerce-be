@@ -25,7 +25,7 @@ async function bootstrap() {
       'JWT-auth',
     )
     .addServer('http://localhost:3000', 'Local development server')
-    .addServer('https://your-api.com', 'Production server')
+    .addServer('https://e-commerce-be-9tqp.onrender.com', 'Production server')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
