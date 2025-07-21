@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum OfferCategory {
+  HEAVY
+  MEDIUM
+  LIGHT
+}
+
+model User {
+  id            Int           @id @default(autoincrement())
+  email         String        @unique
+  name          String?
+  password      String
+  role          Role          @default(CUSTOMER)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  customizations Customization[]
+  refreshTokens RefreshToken[]
+  specialOffers SpecialOffer[]
+}
+
+model Phone {
+  id            Int           @id @default(autoincrement())
+  name          String
+  brand         String
+  price         Float
+  description   String?
+  stock         Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  customizations Customization[]
+  specialOffers SpecialOffer[]
+}
+
+model Package {
+  id            Int           @id @default(autoincrement())
+  name          String
+  description   String?
+  price         Float
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  customizations Customization[]
+  specialOffers SpecialOffer[]
+}
+
+model Customization {
+  id          Int          @id @default(autoincrement())
+  userId      Int
+  phoneId     Int
+  packageId   Int?
+  offerId     Int?
+  createdAt   DateTime     @default(now())
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone       Phone        @relation(fields: [phoneId], references: [id], onDelete: Restrict)
+  package     Package?     @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  specialOffer SpecialOffer? @relation(fields: [offerId], references: [id], onDelete: SetNull)
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SpecialOffer {
+  id          Int          @id @default(autoincrement())
+  name        String
+  description String?
+  category    OfferCategory
+  discount    Float        // Discount percentage (e.g., 0.2 for 20%)
+  userId      Int
+  phoneId     Int?
+  packageId   Int?
+  createdAt   DateTime     @default(now())
+  expiresAt   DateTime
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone       Phone?       @relation(fields: [phoneId], references: [id], onDelete: SetNull)
+  package     Package?     @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  customizations Customization[]
+}
