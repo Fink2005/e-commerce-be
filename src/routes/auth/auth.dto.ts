@@ -36,6 +36,11 @@ const RegisterResSchema = z.object({
   updated_at: z.date(),
 });
 
+
+const SendEmailSchema = z.object({
+    email: z.string().email().nonempty({ message: 'Email is required' }),
+})
+
 // =======================
 // 📥 Input DTOs
 // =======================
@@ -57,6 +62,15 @@ export class RefreshDTO extends createZodDto(RefreshSchema) {
 
 export class LogoutDTO extends createZodDto(RefreshSchema) {
   @ApiProperty({ example: 'your-refresh-token-here' }) refreshToken: string;
+}
+
+export class SendEmailDTO extends createZodDto(SendEmailSchema) {
+    @ApiProperty({ example: 'your-email-here' })  email: string;
+}
+
+export class VerifyEmailDTO {
+  @ApiProperty({ example: 'your-verification-token-here' })
+  code: string;
 }
 
 // =======================

@@ -9,7 +9,6 @@
   "typescript.tsdk": "node_modules/typescript/lib", // Use the workspace version of TypeScript
   "typescript.enablePromptUseWorkspaceTsdk": true, // For security reasons it's require that users opt into using the workspace version of typescript
 
-  "typescript.preferences.preferTypeOnlyAutoImports": true, // Prefer type-only imports
 
   // Disable the default formatter, use ESLint instead
   "prettier.enable": false,

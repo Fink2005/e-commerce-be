@@ -2,10 +2,12 @@ import {
     Body,
     ConflictException,
     Controller,
+    Get,
     HttpCode,
-    Post
+    Post,
+    Query
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
     LoginDTO,
     LoginResDTO,
@@ -14,7 +16,9 @@ import {
     RefreshDTO,
     RefreshResDTO,
     RegisterDTO,
-    RegisterResDTO
+    RegisterResDTO,
+    SendEmailDTO,
+    VerifyEmailDTO
 } from 'src/routes/auth/auth.dto';
 import { AuthService } from 'src/routes/auth/auth.service';
 
@@ -52,6 +56,28 @@ export class AuthController {
   async refreshToken(@Body() body: RefreshDTO) {
     return await this.authService.refreshToken(body.refreshToken);
   }
+
+  @Post('send-email')
+  @ApiOperation({ summary: 'Send confirmation email' })
+  @ApiResponse({ status: 201, description: 'Email sent successfully', type: SendEmailDTO })
+    async sendEmail(@Body() body: SendEmailDTO) {
+        return await this.authService.sendEmail(body.email);
+    }
+
+    @Get('verify-email')
+    @ApiOperation({ summary: 'Verify email with token' })
+    @ApiQuery({
+      name: 'code',
+      required: true,
+      description: 'Email verification token',
+      example: 'your-verification-token-here',
+    })
+    @ApiResponse({ status: 200, description: 'Email verified successfully' })
+    async verifyEmail(@Query() query: VerifyEmailDTO) {
+      return await this.authService.verifyEmail(query.code);
+    }
+    
+
 
   @Post('logout')
   @ApiOperation({ summary: 'User logout' })

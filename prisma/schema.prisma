@@ -19,16 +19,22 @@ enum OfferCategory {
 }
 
 model User {
-  id            Int           @id @default(autoincrement())
-  email         String        @unique
-  name          String?
-  password      String
-  role          Role          @default(CUSTOMER)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  customizations Customization[]
-  refreshTokens RefreshToken[]
-  specialOffers SpecialOffer[]
+  id               Int           @id @default(autoincrement())
+  email            String        @unique
+  name             String?
+  password         String
+  role             Role          @default(CUSTOMER)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  // ✅ Email confirmation fields
+  isEmailConfirmed Boolean       @default(false)
+  emailConfirmToken String?     @unique
+  emailConfirmTokenExpiresAt DateTime?
+
+  customizations   Customization[]
+  refreshTokens    RefreshToken[]
+  specialOffers    SpecialOffer[]
 }
 
 model Phone {

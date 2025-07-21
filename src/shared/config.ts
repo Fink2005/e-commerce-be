@@ -20,6 +20,7 @@ const ConfigSchema = z.object({
   SECRET_API_KEY: z.string().nonempty(),
   REFRESH_TOKEN_SECRET: z.string().nonempty(),
   REFRESH_TOKEN_EXPIRES_IN: z.string().nonempty(),
+  RESEND_API_KEY: z.string().nonempty(),
 });
 
 // Validate
