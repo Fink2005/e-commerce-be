@@ -1,67 +1,41 @@
-import js from '@eslint/js';
-import globals from 'globals';
-import tseslint from 'typescript-eslint';
+// @ts-check
+import eslint from '@eslint/js'
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
+import globals from 'globals'
+import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  // Base JavaScript recommended rules
-  js.configs.recommended,
-
-  // TypeScript recommended rules
-  ...tseslint.configs.recommended,
-
-  // Configuration for all JS/TS files
   {
-    files: ['**/*.{js,mjs,cjs,ts,tsx}'],
-
+    ignores: ['eslint.config.mjs'],
+  },
+  eslint.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
+  eslintPluginPrettierRecommended,
+  {
     languageOptions: {
       globals: {
         ...globals.node,
-        ...globals.es2022,
+        ...globals.jest,
       },
-      parser: tseslint.parser,
+      ecmaVersion: 5,
+      sourceType: 'module',
       parserOptions: {
-        project: './tsconfig.json', // Important for TypeScript rules
-        sourceType: 'module',
-        ecmaVersion: 'latest',
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
       },
     },
-    plugins: {
-      '@typescript-eslint': tseslint.plugin,
-    },
-
-    rules: {
-      // Disable base rule and use TypeScript version
-      '@typescript-eslint/no-unused-vars': [
-        'warn',
-        {
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_',
-        },
-      ],
-
-      'no-constant-condition': 'off',
-      'no-console': 'error',
-
-      // Additional TypeScript-specific rules
-      '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/no-explicit-any': 'warn',
-      'no-unused-vars': 'off',
-      'no-lonely-if': 'error',
-      'no-unsafe-member-access': 'error',
-      'no-unsafe-return': 'error',
-      'no-prototype-builtins': 'off',
-      '@typescript-eslint/no-non-null-assertion': 'warn',
-      'no-unsafe-optional-chaining': 'error',
-      'prefer-const': 'warn',
-    },
   },
-
-  // Browser environment for specific files if needed
   {
-    files: ['**/*.client.{js,ts}', '**/frontend/**/*.{js,ts}'],
-    languageOptions: {
-      globals: globals.browser,
+    rules: {
+      '@typescript-eslint/no-floating-promises': 'warn',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/only-throw-error': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      'prettier/prettier': 'off',
     },
   },
-);
+)

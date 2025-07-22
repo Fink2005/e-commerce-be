@@ -110,11 +110,10 @@ export class LoginResDTO extends createZodDto(TokenResponseSchema) {
 export class RefreshResDTO extends LoginResDTO {}
 
 
-
 export class RegisterResDTO extends createZodDto(RegisterResSchema) {
   @ApiProperty({ example: 123 }) id: number;
   @ApiProperty({ example: 'user@example.com' }) email: string;
-  @ApiProperty({ example: 'John Doe' }) name: string;
+  @ApiProperty({ example: 'Fantansyn' }) name: string;
   @ApiProperty({ example: '2024-07-21T10:30:00.000Z' }) created_at: Date;
   @ApiProperty({ example: '2024-07-21T10:30:00.000Z' }) updated_at: Date;
 }

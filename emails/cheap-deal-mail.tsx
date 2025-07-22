@@ -7,19 +7,16 @@ import {
     Img,
     Link,
     Preview,
-    Text
+    Text,
 } from '@react-email/components';
 
 interface CheapDealMailProps {
   loginCode?: string;
 }
-// asd
+const logo =
+  'https://res.cloudinary.com/dwzi1o7b4/image/upload/v1753117622/cheapdeals_pykcac.png';
 
-  const logo = 'https://res.cloudinary.com/dwzi1o7b4/image/upload/v1753117622/cheapdeals_pykcac.png'
-
- const CheapDealMail: React.FC<CheapDealMailProps> = ({
-  loginCode,
-}) => (
+const CheapDealMail: React.FC<CheapDealMailProps> = ({ loginCode }) => (
   <Html>
     <Head />
     <Preview>Log in with Cheap Deals</Preview>
@@ -27,7 +24,7 @@ interface CheapDealMailProps {
       <Container style={container}>
         <Heading style={h1}>Login</Heading>
         <Link
-          href={`http://localhost:3000/verify-email?code=${loginCode}`}
+          href={`https://cheapdeals.vercel.app/verify-email?code=${loginCode}`}
           target="_blank"
           style={{
             ...link,
@@ -40,7 +37,9 @@ interface CheapDealMailProps {
         <Text style={{ ...text, marginBottom: '14px' }}>
           Or, copy and paste this temporary login code:
         </Text>
-        <code style={code}>{`http://localhost:3000/verify-email?code=${loginCode}`}</code>
+        <code
+          style={code}
+        >{`https://cheapdeals.vercel.app/verify-email?code=${loginCode}`}</code>
         <Text
           style={{
             ...text,
@@ -62,13 +61,8 @@ interface CheapDealMailProps {
           Hint: You can set a permanent password in Settings & members → My
           account.
         </Text>
-        <Img
-          src={logo}
-          width="120"
-          height="120"
-          alt="Cheap deals Logo"
-        />
-      
+        <Img src={logo} width="120" height="120" alt="Cheap deals Logo" />
+
         <Text style={footer}>
           <Link
             href="https://notion.so"
@@ -86,11 +80,10 @@ interface CheapDealMailProps {
   </Html>
 );
 
-
 export default CheapDealMail;
 
 const main = {
-border: '1px solid #eaeaea',
+  border: '1px solid #eaeaea',
   backgroundColor: '#ffffff',
 };
 

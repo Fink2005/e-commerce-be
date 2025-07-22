@@ -238,7 +238,6 @@ export class AuthService {
         
   }
 
-
   async refreshToken(refreshToken: string) {
     try {
       // 1 verify refresh token
@@ -270,7 +269,6 @@ export class AuthService {
       throw new UnauthorizedException();
     }
   }
-
 
 
   async generateTokens(payload: { userId: number }) {
