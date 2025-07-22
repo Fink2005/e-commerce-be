@@ -100,6 +100,7 @@ model Bundle {
   id            Int           @id @default(autoincrement())
   name          String
   description   String?
+imgUrl        String?
   price         Float         // Bundle price (can be less than individual prices)
   rating        Float?
   isActive      Boolean       @default(true)
