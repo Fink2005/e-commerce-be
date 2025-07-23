@@ -85,6 +85,7 @@ model Package {
   name          String
   description   String?
   price         Float
+  imgUrl        String?
   rating        Float?
   isActive      Boolean       @default(true)
   type           ProductType  @default(PACKAGE) // Type of the package
