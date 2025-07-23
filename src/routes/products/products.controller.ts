@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags, getSchemaPath } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags, getSchemaPath } from '@nestjs/swagger';
 import { ProductType } from '@prisma/client';
 import { BundleCreateDTO, BundleResDTO, CreatePackageDTO, PackageResDTO, PhoneCreateDTO, PhoneResDTO } from 'src/routes/products/products.dto';
 import { ProductsService } from 'src/routes/products/products.service';
@@ -9,9 +9,10 @@ export class ProductsController {
   constructor(private readonly productService: ProductsService) {}
   @Get()
   @ApiOperation({ summary: 'Get all products' })
+  @ApiQuery({ name: 'productType', enum: ProductType, required: false }) // 👈 This defines `type` in Swagger
   @ApiResponse({ status: 200, type: PhoneResDTO })
-  async getProducts() {
-    return await this.productService.getProducts();
+  async getProducts(@Query('productType') productType ) {
+    return await this.productService.getProducts(productType);
   }
     // create bundle
   @Post('bundle')

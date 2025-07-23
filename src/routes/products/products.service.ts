@@ -7,18 +7,40 @@ import { PrismaService } from 'src/shared/services/prisma.service';
 export class ProductsService {
     constructor(private readonly prismaService: PrismaService) {
     }
-    async getProducts() {
-        const [phonesResult, packageResult,  bundlesResult] = await Promise.allSettled([
+    async getProducts(productType: ProductType = ProductType.ALL) {
+        
+        const [phonesResult, packageResult, bundlesResult] = await Promise.allSettled([
             this.prismaService.phone.findMany(),
             this.prismaService.package.findMany(),
             this.prismaService.bundle.findMany()
         ]);
-
-        return {
-            phones: phonesResult.status === 'fulfilled' ? phonesResult.value : [],
-            packages: packageResult.status === 'fulfilled' ? packageResult.value : [],
-            bundles: bundlesResult.status === 'fulfilled' ? bundlesResult.value : []
-        };
+    
+        switch (productType) {
+            case ProductType.PHONE:
+                if (phonesResult.status === 'rejected') {
+                    throw new BadRequestException('Failed to fetch phones');
+                }
+                return phonesResult.value;
+    
+            case ProductType.PACKAGE:
+                if (packageResult.status === 'rejected') {
+                    throw new BadRequestException('Failed to fetch packages');
+                }
+                return packageResult.value;
+    
+            case ProductType.BUNDLE:
+                if (bundlesResult.status === 'rejected') {
+                    throw new BadRequestException('Failed to fetch bundles');
+                }
+                return bundlesResult.value;
+    
+            default:
+                return [
+                    ...(phonesResult.status === 'fulfilled' ? phonesResult.value : []),
+                    ...(packageResult.status === 'fulfilled' ? packageResult.value : []),
+                    ...(bundlesResult.status === 'fulfilled' ? bundlesResult.value : [])
+                ];
+        }
     }
     async getProductById(productType: string, productId: number) {
         switch (productType) {
@@ -82,7 +104,6 @@ export class ProductsService {
 
     }
     async createPackageProduct(body: CreatePackageDTO) {
-        console.log(body);
         const packageData = await this.prismaService.package.create({
             data: {
                 name: body.name,
