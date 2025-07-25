@@ -50,7 +50,7 @@ export class AuthController {
     @Body() body: LoginDTO,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { tokens, user } = await this.authService.login(body);
+    const { tokens } = await this.authService.login(body);
     res.cookie('access_token', tokens.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -67,7 +67,7 @@ export class AuthController {
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     });
 
-    return user;
+    return {success: true};
   }
 
   @Post('refresh-token')

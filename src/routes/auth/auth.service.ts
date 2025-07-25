@@ -75,11 +75,7 @@ export class AuthService {
     }
 
     return {
-        tokens: await this.generateTokens({ userId: user.id }),
-        user: {
-          role: user.role,
-          isEmailConfirmed: user.isEmailConfirmed,
-        },
+        tokens: await this.generateTokens({ userId: user.id, isVerified: user.isEmailConfirmed, role: user.role }),
     };
   } 
 
@@ -241,7 +237,7 @@ export class AuthService {
   async refreshToken(refreshToken: string) {
     try {
       // 1 verify refresh token
-      const { userId } =
+      const { userId,isVerified, role } =
         await this.tokenService.verifyRefreshToken(refreshToken);
       const storedToken = await this.prismaService.refreshToken.findUniqueOrThrow({
         where: {
@@ -261,7 +257,7 @@ export class AuthService {
           token: refreshToken,
         },
       });
-      return this.generateTokens({ userId });
+      return this.generateTokens({ userId, isVerified, role });
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UnauthorizedException('Refresh token has been revoked');
@@ -271,7 +267,11 @@ export class AuthService {
   }
 
 
-  async generateTokens(payload: { userId: number }) {
+  async generateTokens(payload:{
+    userId: number,
+    isVerified: boolean,
+    role: string
+  }) {
     const [accessToken, refreshToken] = await Promise.all([
       this.tokenService.signAccessToken(payload),
       this.tokenService.signRefreshToken(payload),
@@ -281,7 +281,7 @@ export class AuthService {
     await this.prismaService.refreshToken.create({
       data: {
         token: refreshToken,
-        userId: payload.userId,
+        userId:payload.userId,
         expiresAt: new Date(decodedRefreshToken.exp * 1000),
       },
     });
