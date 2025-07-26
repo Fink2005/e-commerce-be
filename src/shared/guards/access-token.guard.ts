@@ -25,14 +25,12 @@ export class AccessTokenGuard implements CanActivate {
       throw new UnauthorizedException('Access token is missing');
     }
     try {
-      console.log(accessTokenCookie);
       const decodedToken = await this.tokenService.verifyAccessToken(
         accessTokenBearer ?? accessTokenCookie ?? '',
       );
       request[REQUEST_USER_KEY] = decodedToken;
       return true;
     } catch {
-      console.log('loiii');
       throw new UnauthorizedException('Invalid or expired access token');
     }
   }
