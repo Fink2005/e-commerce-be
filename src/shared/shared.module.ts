@@ -1,9 +1,9 @@
 import { Global, Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
-import { AccessTokenGuard } from 'src/shared/guards/access-token.guard';
+import { AccessTokenGuard } from 'src/shared/guards/access1-token.guard';
 import { APIKeyGuard } from 'src/shared/guards/api-key.guard';
-import { AuthenticationGuard } from 'src/shared/guards/authentication.guard';
+import { AuthenticationGuard } from 'src/shared/guards/authentication2.guard';
 import { EmailService } from 'src/shared/services/email.service';
 import { PrismaService } from 'src/shared/services/prisma.service';
 import { TokenService } from 'src/shared/services/token.service';

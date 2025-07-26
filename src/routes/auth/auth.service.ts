@@ -1,13 +1,11 @@
 import {
-    Injectable,
-    UnauthorizedException,
-    UnprocessableEntityException,
+  Injectable,
+  UnauthorizedException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import console from 'console';
 import type { LoginDTO, RegisterDTO } from 'src/routes/auth/auth.dto';
-import {
-    isNotFoundPrismaError
-} from 'src/shared/helpers';
+import { isNotFoundPrismaError } from 'src/shared/helpers';
 import { EmailService } from 'src/shared/services/email.service';
 import { HashingService } from 'src/shared/services/hashing.service';
 import { PrismaService } from 'src/shared/services/prisma.service';
@@ -19,36 +17,36 @@ export class AuthService {
     private readonly hashingService: HashingService,
     private readonly prismaService: PrismaService,
     private readonly tokenService: TokenService,
-    private readonly emailService: EmailService
+    private readonly emailService: EmailService,
   ) {}
   async register(body: RegisterDTO) {
     const hashedPassword = await this.hashingService.hash(body.password);
-   const isUserExist= await this.prismaService.user.findUnique({
-       where: { email: body.email },
-     });
-     console.log(isUserExist);
+    const isUserExist = await this.prismaService.user.findUnique({
+      where: { email: body.email },
+    });
+    console.log(isUserExist);
 
-     if (isUserExist) {
-         throw new UnprocessableEntityException([
-            {
-              field: 'email',
-              message: 'Email already exists',
-            },
-         ]);
-     }
+    if (isUserExist) {
+      throw new UnprocessableEntityException([
+        {
+          field: 'email',
+          message: 'Email already exists',
+        },
+      ]);
+    }
 
     await this.prismaService.user.create({
-       data: {
-           email: body.email,
-           name: body.name,    
-           password: hashedPassword,
-           role: 'CUSTOMER',
-           emailConfirmToken: uuidv4(),
-           emailConfirmTokenExpiresAt: new Date(Date.now() + 15 * 60 * 1000)
-       },
-     });
-    
-    return {success: true};    
+      data: {
+        email: body.email,
+        name: body.name,
+        password: hashedPassword,
+        role: 'CUSTOMER',
+        emailConfirmToken: uuidv4(),
+        emailConfirmTokenExpiresAt: new Date(Date.now() + 15 * 60 * 1000),
+      },
+    });
+
+    return { success: true };
   }
   async login(body: LoginDTO) {
     const user = await this.prismaService.user.findUnique({
@@ -75,9 +73,13 @@ export class AuthService {
     }
 
     return {
-        tokens: await this.generateTokens({ userId: user.id, isVerified: user.isEmailConfirmed, role: user.role }),
+      tokens: await this.generateTokens({
+        userId: user.id,
+        isVerified: user.isEmailConfirmed,
+        role: user.role,
+      }),
     };
-  } 
+  }
 
   async logout(refreshToken: string) {
     try {
@@ -88,7 +90,7 @@ export class AuthService {
           token: refreshToken,
         },
       });
-      return { message: 'Logout successfully' };
+      return { success: true, message: 'Logout successfully' };
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
         throw new UnauthorizedException('Refresh token not found');
@@ -101,25 +103,30 @@ export class AuthService {
     const user = await this.prismaService.user.findUnique({
       where: { email },
     });
-  // Check if user exists
+    // Check if user exists
     if (!user) {
       throw new UnauthorizedException('Email not found');
     }
-  
+
     const { isEmailConfirmed, emailConfirmToken } = user;
-  
+
     if (isEmailConfirmed) {
       throw new UnauthorizedException(
         'Email has already been confirmed, please login to continue',
       );
     }
-  
+
     if (!emailConfirmToken) {
       throw new UnauthorizedException('Email confirmation token not found');
     }
 
-    const { error } = await this.emailService.sendEmail(email, user.name!, emailConfirmToken, 'verify');
-  
+    const { error } = await this.emailService.sendEmail(
+      email,
+      user.name,
+      emailConfirmToken,
+      'verify',
+    );
+
     if (error) {
       throw new UnprocessableEntityException('Failed to send email');
     }
@@ -132,15 +139,20 @@ export class AuthService {
         emailConfirmToken,
       },
     });
-    
 
     if (!user) {
-      throw new UnauthorizedException('Invalid or expired email verified token');
+      throw new UnauthorizedException(
+        'Invalid or expired email verified token',
+      );
     }
 
-    if (user.emailConfirmTokenExpiresAt
-        && user.emailConfirmTokenExpiresAt < new Date()) {
-      throw new UnauthorizedException('Email verification token has expired, please request a new one');
+    if (
+      user.emailConfirmTokenExpiresAt &&
+      user.emailConfirmTokenExpiresAt < new Date()
+    ) {
+      throw new UnauthorizedException(
+        'Email verification token has expired, please request a new one',
+      );
     }
 
     await this.prismaService.user.update({
@@ -175,8 +187,13 @@ export class AuthService {
       },
     });
 
-    const { error } = await this.emailService.sendEmail(email, user.name!, forgotPasswordToken, 'reset');
-  
+    const { error } = await this.emailService.sendEmail(
+      email,
+      user.name,
+      forgotPasswordToken,
+      'reset',
+    );
+
     if (error) {
       throw new UnprocessableEntityException('Failed to send email');
     }
@@ -192,15 +209,24 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('Invalid or expired password reset token');
+      throw new UnauthorizedException(
+        'Invalid or expired password reset token',
+      );
     }
 
-    if (user.resetPasswordTokenExpiresAt
-        && user.resetPasswordTokenExpiresAt < new Date()) {
-      throw new UnauthorizedException('Password reset token has expired, please request a new one');
+    if (
+      user.resetPasswordTokenExpiresAt &&
+      user.resetPasswordTokenExpiresAt < new Date()
+    ) {
+      throw new UnauthorizedException(
+        'Password reset token has expired, please request a new one',
+      );
     }
 
-    return { success: true, message: 'Password reset token verified successfully' };
+    return {
+      success: true,
+      message: 'Password reset token verified successfully',
+    };
   }
 
   async newPassword(password: string, resetPasswordToken: string) {
@@ -211,12 +237,18 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('Invalid or expired password reset token');
+      throw new UnauthorizedException(
+        'Invalid or expired password reset token',
+      );
     }
 
-    if (user.resetPasswordTokenExpiresAt
-        && user.resetPasswordTokenExpiresAt < new Date()) {
-      throw new UnauthorizedException('Password reset token has expired, please request a new one');
+    if (
+      user.resetPasswordTokenExpiresAt &&
+      user.resetPasswordTokenExpiresAt < new Date()
+    ) {
+      throw new UnauthorizedException(
+        'Password reset token has expired, please request a new one',
+      );
     }
 
     const hashedPassword = await this.hashingService.hash(password);
@@ -231,19 +263,19 @@ export class AuthService {
     });
 
     return { success: true, message: 'Password updated successfully' };
-        
   }
 
   async refreshToken(refreshToken: string) {
     try {
       // 1 verify refresh token
-      const { userId,isVerified, role } =
+      const { userId, isVerified, role } =
         await this.tokenService.verifyRefreshToken(refreshToken);
-      const storedToken = await this.prismaService.refreshToken.findUniqueOrThrow({
-        where: {
-          token: refreshToken,
-        },
-      });
+      const storedToken =
+        await this.prismaService.refreshToken.findUniqueOrThrow({
+          where: {
+            token: refreshToken,
+          },
+        });
 
       if (new Date() > storedToken.expiresAt) {
         await this.prismaService.refreshToken.delete({
@@ -253,7 +285,7 @@ export class AuthService {
       }
 
       await this.prismaService.refreshToken.delete({
-        where: { 
+        where: {
           token: refreshToken,
         },
       });
@@ -266,11 +298,10 @@ export class AuthService {
     }
   }
 
-
-  async generateTokens(payload:{
-    userId: number,
-    isVerified: boolean,
-    role: string
+  async generateTokens(payload: {
+    userId: number;
+    isVerified: boolean;
+    role: string;
   }) {
     const [accessToken, refreshToken] = await Promise.all([
       this.tokenService.signAccessToken(payload),
@@ -281,7 +312,7 @@ export class AuthService {
     await this.prismaService.refreshToken.create({
       data: {
         token: refreshToken,
-        userId:payload.userId,
+        userId: payload.userId,
         expiresAt: new Date(decodedRefreshToken.exp * 1000),
       },
     });

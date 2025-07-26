@@ -16,7 +16,7 @@ async function bootstrap() {
     .addBearerAuth(
       {
         type: 'http',
-        scheme: 'bearer',
+        scheme: 'Bearer',
         bearerFormat: 'JWT',
         name: 'JWT',
         description: 'Enter JWT token',
@@ -51,7 +51,9 @@ async function bootstrap() {
   await app.listen(port);
 
   console.log(`Application is running on: ${await app.getUrl()}`);
-  console.log(`Swagger documentation available at: ${await app.getUrl()}/api-docs`);
+  console.log(
+    `Swagger documentation available at: ${await app.getUrl()}/api-docs`,
+  );
 }
 
 bootstrap();

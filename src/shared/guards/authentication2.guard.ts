@@ -10,7 +10,7 @@ import {
     AUTH_TYPE_KEY,
     AuthTypeDecoratorPayload,
 } from 'src/shared/decorators/auth.decorator';
-import { AccessTokenGuard } from 'src/shared/guards/access-token.guard';
+import { AccessTokenGuard } from 'src/shared/guards/access1-token.guard';
 import { APIKeyGuard } from 'src/shared/guards/api-key.guard';
 @Injectable()
 export class AuthenticationGuard implements CanActivate {

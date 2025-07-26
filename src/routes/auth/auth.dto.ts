@@ -20,6 +20,7 @@ const RefreshSchema = z.object({
 });
 
 const MessageSchema = z.object({
+  success: z.boolean(),
   message: z.string(),
 });
 
@@ -36,23 +37,23 @@ const RegisterResSchema = z.object({
   updated_at: z.date(),
 });
 
-
 const SendEmailSchema = z.object({
-    email: z.string().email().nonempty({ message: 'Email is required' }),
-})
-
-
-const ForgotPasswordSchema = z.object({
-    email: z.string().email().nonempty({ message: 'Email is required' }),
-})
-
-const VerifyPasswordSchema = z.object({
-    code: z.string().nonempty({ message: 'Verification code is required' }),
+  email: z.string().email().nonempty({ message: 'Email is required' }),
 });
 
-const NewPasswordSchema =  VerifyPasswordSchema.extend({
-    password: z.string().min(8, { message: 'Password must be at least 8 characters long' })
-})
+const ForgotPasswordSchema = z.object({
+  email: z.string().email().nonempty({ message: 'Email is required' }),
+});
+
+const VerifyPasswordSchema = z.object({
+  code: z.string().nonempty({ message: 'Verification code is required' }),
+});
+
+const NewPasswordSchema = VerifyPasswordSchema.extend({
+  password: z
+    .string()
+    .min(8, { message: 'Password must be at least 8 characters long' }),
+});
 
 // =======================
 // 📥 Input DTOs
@@ -73,10 +74,8 @@ export class RefreshDTO extends createZodDto(RefreshSchema) {
   @ApiProperty({ example: 'your-refresh-token-here' }) refreshToken: string;
 }
 
-
-
 export class SendEmailDTO extends createZodDto(SendEmailSchema) {
-    @ApiProperty({ example: 'your-email-here' })  email: string;
+  @ApiProperty({ example: 'your-email-here' }) email: string;
 }
 
 export class VerifyEmailDTO {
@@ -84,31 +83,31 @@ export class VerifyEmailDTO {
   code: string;
 }
 
-
 export class ForgotPasswordDTO extends createZodDto(ForgotPasswordSchema) {
-    @ApiProperty({example: 'your-email-here'}) email: string;
+  @ApiProperty({ example: 'your-email-here' }) email: string;
 }
 export class VerifyPasswordDTO extends createZodDto(VerifyPasswordSchema) {
-    @ApiProperty({ example: 'your-verification-code-here' }) code: string;
+  @ApiProperty({ example: 'your-verification-code-here' }) code: string;
 }
 
 export class NewPasswordDTO extends createZodDto(NewPasswordSchema) {
-    @ApiProperty({ example: 'NewSecurePassword123!' }) password: string;
-    @ApiProperty({ example: 'your-verification-code-here' }) code: string;
+  @ApiProperty({ example: 'NewSecurePassword123!' }) password: string;
+  @ApiProperty({ example: 'your-verification-code-here' }) code: string;
 }
-
 
 // =======================
 // 📤 Output DTOs
 // =======================
-
+export class MessageResDTO extends createZodDto(MessageSchema) {
+  @ApiProperty({ example: 'Operation successful' }) message: string;
+  @ApiProperty({ example: true }) success: boolean;
+}
 export class LoginResDTO extends createZodDto(TokenResponseSchema) {
   @ApiProperty({ example: 'access-token' }) accessToken: string;
   @ApiProperty({ example: 'refresh-token' }) refreshToken: string;
 }
 
 export class RefreshResDTO extends LoginResDTO {}
-
 
 export class RegisterResDTO extends createZodDto(RegisterResSchema) {
   @ApiProperty({ example: 123 }) id: number;

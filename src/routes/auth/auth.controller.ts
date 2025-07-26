@@ -1,27 +1,28 @@
 import {
-    Body,
-    ConflictException,
-    Controller,
-    Get,
-    HttpCode,
-    Post,
-    Query,
-    Req,
-    Res,
+  Body,
+  ConflictException,
+  Controller,
+  Get,
+  HttpCode,
+  Post,
+  Query,
+  Req,
+  Res,
 } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import {
-    LoginDTO,
-    LoginResDTO,
-    NewPasswordDTO,
-    RefreshDTO,
-    RefreshResDTO,
-    RegisterDTO,
-    RegisterResDTO,
-    SendEmailDTO,
-    VerifyEmailDTO,
-    VerifyPasswordDTO,
+  LoginDTO,
+  LoginResDTO,
+  MessageResDTO,
+  NewPasswordDTO,
+  RefreshDTO,
+  RefreshResDTO,
+  RegisterDTO,
+  RegisterResDTO,
+  SendEmailDTO,
+  VerifyEmailDTO,
+  VerifyPasswordDTO,
 } from 'src/routes/auth/auth.dto';
 import { AuthService } from 'src/routes/auth/auth.service';
 
@@ -67,7 +68,7 @@ export class AuthController {
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     });
 
-    return {success: true};
+    return { success: true };
   }
 
   @Post('refresh-token')
@@ -75,7 +76,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Refresh access token' })
   @ApiResponse({ status: 200, type: RefreshResDTO })
   @ApiResponse({ status: 401, description: 'Invalid refresh token' })
-  async refreshToken(@Body() body: RefreshDTO) {
+  async refreshToken(@Body() body: RefreshDTO): Promise<RefreshResDTO> {
     return await this.authService.refreshToken(body.refreshToken);
   }
 
@@ -86,7 +87,7 @@ export class AuthController {
     description: 'Email sent successfully',
     type: SendEmailDTO,
   })
-  async sendEmail(@Body() body: SendEmailDTO) {
+  async sendEmail(@Body() body: SendEmailDTO): Promise<MessageResDTO> {
     return await this.authService.sendEmail(body.email);
   }
 
@@ -99,7 +100,7 @@ export class AuthController {
     example: 'your-verification-token-here',
   })
   @ApiResponse({ status: 200, description: 'Email verified successfully' })
-  async verifyEmail(@Query() query: VerifyEmailDTO) {
+  async verifyEmail(@Query() query: VerifyEmailDTO): Promise<MessageResDTO> {
     return await this.authService.verifyEmail(query.code);
   }
 
@@ -110,7 +111,7 @@ export class AuthController {
     description: 'Forgot password email sent successfully',
     type: SendEmailDTO,
   })
-  async forgotPassword(@Body() body: SendEmailDTO) {
+  async forgotPassword(@Body() body: SendEmailDTO): Promise<MessageResDTO> {
     return await this.authService.forgotPassword(body.email);
   }
 
@@ -126,14 +127,16 @@ export class AuthController {
     status: 200,
     description: 'Password reset code verified successfully',
   })
-  async verifyPassword(@Query() query: VerifyPasswordDTO) {
+  async verifyPassword(
+    @Query() query: VerifyPasswordDTO,
+  ): Promise<MessageResDTO> {
     return await this.authService.verifyPassword(query.code);
   }
 
   @Post('new-password')
   @ApiOperation({ summary: 'Set new password' })
   @ApiResponse({ status: 200, description: 'New password set successfully' })
-  async newPassword(@Body() body: NewPasswordDTO) {
+  async newPassword(@Body() body: NewPasswordDTO): Promise<MessageResDTO> {
     return await this.authService.newPassword(body.password, body.code);
   }
 
@@ -141,7 +144,10 @@ export class AuthController {
   @ApiOperation({ summary: 'User logout' })
   @ApiResponse({ status: 200, description: 'Logout successful' })
   @ApiResponse({ status: 401, description: 'Invalid refresh token' })
-  async logout(@Res({ passthrough: true }) res: Response, @Req() req: Request) {
+  async logout(
+    @Res({ passthrough: true }) res: Response,
+    @Req() req: Request,
+  ): Promise<MessageResDTO> {
     const refreshToken = req.cookies['refresh_token'];
     res.clearCookie('access_token', {
       httpOnly: true,
@@ -158,6 +164,6 @@ export class AuthController {
       path: '/',
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     });
-    return await this.authService.logout(refreshToken);
+    return await this.authService.logout(refreshToken as string);
   }
 }

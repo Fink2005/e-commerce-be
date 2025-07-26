@@ -1,7 +1,7 @@
 export interface TokenPayload {
   userId: number;
   role: string;
-  isVerified: boolean
+  isVerified: boolean;
   exp: number;
   iat: number;
 }
