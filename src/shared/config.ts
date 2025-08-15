@@ -9,7 +9,9 @@ const envPath = path.resolve('.env');
 if (fs.existsSync(envPath)) {
   dotenv.config({ path: envPath });
 } else {
-  console.warn('.env file not found — assuming environment variables are set externally (e.g. on Render)');
+  console.warn(
+    '.env file not found — assuming environment variables are set externally (e.g. on Render)',
+  );
 }
 
 // Zod schema
@@ -19,6 +21,7 @@ const ConfigSchema = z.object({
   ACCESS_TOKEN_EXPIRES_IN: z.string().nonempty(),
   SECRET_API_KEY: z.string().nonempty(),
   REFRESH_TOKEN_SECRET: z.string().nonempty(),
+  PAYMENT_API_KEY: z.string().nonempty(),
   REFRESH_TOKEN_EXPIRES_IN: z.string().nonempty(),
   RESEND_API_KEY: z.string().nonempty(),
 });

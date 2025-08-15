@@ -1,121 +1,92 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ProductType } from '@prisma/client';
-import { BundleCreateDTO, CreatePackageDTO, PhoneCreateDTO } from 'src/routes/products/products.dto';
 import { PrismaService } from 'src/shared/services/prisma.service';
+import { ProductCreateDTO } from './products.dto';
 
 @Injectable()
 export class ProductsService {
-    constructor(private readonly prismaService: PrismaService) {
-    }
-    async getProducts(productType: ProductType = ProductType.ALL) {
-        
-        const [phonesResult, packageResult, bundlesResult] = await Promise.allSettled([
-            this.prismaService.phone.findMany(),
-            this.prismaService.package.findMany(),
-            this.prismaService.bundle.findMany()
-        ]);
-    
-        switch (productType) {
-            case ProductType.PHONE:
-                if (phonesResult.status === 'rejected') {
-                    throw new BadRequestException('Failed to fetch phones');
-                }
-                return phonesResult.value;
-    
-            case ProductType.PACKAGE:
-                if (packageResult.status === 'rejected') {
-                    throw new BadRequestException('Failed to fetch packages');
-                }
-                return packageResult.value;
-    
-            case ProductType.BUNDLE:
-                if (bundlesResult.status === 'rejected') {
-                    throw new BadRequestException('Failed to fetch bundles');
-                }
-                return bundlesResult.value;
-    
-            default:
-                return [
-                    ...(phonesResult.status === 'fulfilled' ? phonesResult.value : []),
-                    ...(packageResult.status === 'fulfilled' ? packageResult.value : []),
-                    ...(bundlesResult.status === 'fulfilled' ? bundlesResult.value : [])
-                ];
-        }
-    }
-    async getProductById(productType: string, productId: number) {
-        switch (productType) {
-            case ProductType.PHONE:
-              return this.prismaService.phone.findUnique({ where: { id: productId } });
-            case ProductType.PACKAGE:
-              return this.prismaService.package.findUnique({ where: { id: productId } });
-            case ProductType.BUNDLE:
-              return this.prismaService.bundle.findUnique({
-                where: { id: productId },
-                include: {
-                  bundleItems: {
-                    include: {
-                      phone: true,
-                      package: true,
-                    },
-                  },
-                },
-              });
-            default:
-              throw new BadRequestException('Invalid product type');
-          }
-    }
-    async createBundleProduct(body: BundleCreateDTO) {
-        const bundle = await this.prismaService.bundle.create({
-         data: {
-            name: body.name,
-            description: body.description,
-            price: body.price,
-            bundleItems: {
-                create: body.bundleItems.map(item => ({
-                    quantity: item.quantity,
-                    packageId: item.packageId,
-                    phoneId: item.phoneId
-                }))
-            }
-         }
-        });
-        return {
-            success: true,
-            data: bundle
-        }
-    }
-    async createPhoneProduct(body: PhoneCreateDTO) {
-        const phone = await this.prismaService.phone.create({
-            data: {
-                name: body.name,
-                description: body.description,
-                price: body.price,
-                rating: body.rating,
-                brand: body.brand,
-                imgUrl: body.imgUrl,
-                stock: body.stock,
-                isActive: body.isActive
-            }
-        });
-        return {
-            success: true,
-            data: phone
-        };
+  constructor(private readonly prisma: PrismaService) {}
 
+  async getProducts(productType?: ProductType) {
+    if (productType === ProductType.BUNDLE) {
+      const bundles = await this.prisma.bundles.findMany({
+        include: {
+          bundle_items: {
+            include: {
+              Product: true,
+            },
+          },
+        },
+      });
+      return bundles;
+    } else if (productType === ProductType.ALL) {
+      return this.prisma.product.findMany();
     }
-    async createPackageProduct(body: CreatePackageDTO) {
-        const packageData = await this.prismaService.package.create({
-            data: {
-                name: body.name,
-                description: body.description,
-                price: body.price,
-                rating: body.rating,
-                isActive: body.isActive
-            }
-        });
-        return {
-            success: true,
-            data: packageData
-        };
+    return this.prisma.product.findMany({
+      where: {
+        type: productType,
+      },
+    });
+  }
+
+  async getProductById(productId: number) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+    });
+
+    if (!product) throw new BadRequestException('Product not found');
+
+    if (product.type === ProductType.BUNDLE) {
+      const bundle = await this.prisma.bundles.findUnique({
+        where: { id: productId }, // giả sử bạn dùng chung id, nếu không thì cần sửa
+        include: {
+          bundle_items: {
+            include: {
+              Product: true,
+            },
+          },
+        },
+      });
+
+      if (!bundle) throw new BadRequestException('Bundle not found');
+      return bundle;
     }
+
+    return product;
+  }
+
+  async createProduct(body: ProductCreateDTO) {
+    const { bundleItems, ...rest } = body;
+
+    if (body.type === ProductType.BUNDLE) {
+      if (!bundleItems || bundleItems.length === 0) {
+        throw new BadRequestException('Bundle must have at least one item');
+      }
+
+      return await this.prisma.bundles.create({
+        data: {
+          name: rest.name,
+          description: rest.description || '',
+          imgUrl: rest.imgUrl,
+          price: rest.price,
+          rating: rest.rating,
+          isActive: rest.isActive,
+          bundle_items: {
+            create: bundleItems.map((item) => ({
+              productId: item.productId,
+              quantity: item.quantity,
+            })),
+          },
+        },
+      });
+    }
+    return await this.prisma.product.create({
+      data: {
+        ...rest,
+        updatedAt: new Date(),
+        description: rest.description || '',
+        rating: rest.rating || 0,
+      },
+    });
+  }
 }

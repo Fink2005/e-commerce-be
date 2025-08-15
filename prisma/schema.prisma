@@ -7,22 +7,167 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  CUSTOMER
-  ADMIN
+model Product {
+  id             Int              @id @default(autoincrement())
+  name           String
+  description    String
+  price          Int
+  imgUrl         String
+  rating         Int?             @default(0)
+  isActive       Boolean          @default(true)
+  type           ProductType
+  packageType    PackageType?
+  deviceType     DeviceType?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime
+  bundle_items   bundle_items[]
+  cart_items     cart_items[]
+  order_items    order_items[]
+  special_offers special_offers[]
+
+  @@index([isActive])
+  @@index([type])
+}
+
+model bundle_items {
+  id        Int     @id @default(autoincrement())
+  bundleId  Int
+  productId Int
+  quantity  Int     @default(1)
+  bundles   bundles @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+  Product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([bundleId, productId])
+}
+
+model bundles {
+  id           Int            @id @default(autoincrement())
+  name         String
+  description  String
+  imgUrl       String?
+  price        Int
+  rating       Int?           @default(0)
+  isActive     Boolean        @default(true)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @default(now())
+  bundle_items bundle_items[]
+
+  @@index([isActive])
+}
+
+model cart_items {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  Product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  users     users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
+
+model order_items {
+  id         Int     @id @default(autoincrement())
+  orderId    Int
+  productId  Int
+  quantity   Int     @default(1)
+  unitPrice  Decimal @db.Decimal(10, 2)
+  totalPrice Decimal @db.Decimal(10, 2)
+  orders     orders  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  Product    Product @relation(fields: [productId], references: [id])
+}
+
+model orders {
+  id                   Int                    @id @default(autoincrement())
+  orderNumber          String                 @unique
+  userId               Int
+  totalAmount          Decimal                @db.Decimal(10, 2)
+  status               OrderStatus            @default(PENDING)
+  shippingAddress      String?
+  billingAddress       String?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime
+  order_items          order_items[]
+  users                users                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payment_transactions payment_transactions[]
+}
+
+model payment_transactions {
+  id                 Int           @id @default(autoincrement())
+  gateway            String
+  transactionDate    DateTime
+  accountNumber      String
+  code               String?
+  content            String
+  amountIn           Int
+  accumulated        Decimal       @db.Decimal(10, 2)
+  subAccount         String?
+  transactionContent String
+  referenceNumber    Int
+  status             PaymentStatus @default(PENDING)
+  orderId            Int
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime
+  description        String[]
+  amountOut          Int
+  orders             orders        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model refresh_tokens {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  users     users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model special_offers {
+  id          Int           @id @default(autoincrement())
+  name        String
+  description String
+  category    OfferCategory
+  discount    Decimal       @db.Decimal(5, 4)
+  userId      Int
+  productId   Int?
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime
+  expiresAt   DateTime
+  Product     Product?      @relation(fields: [productId], references: [id])
+  users       users         @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model users {
+  id                          Int              @id @default(autoincrement())
+  email                       String           @unique
+  name                        String
+  password                    String
+  role                        Role             @default(CUSTOMER)
+  createdAt                   DateTime         @default(now())
+  updatedAt                   DateTime
+  isEmailConfirmed            Boolean          @default(false)
+  emailConfirmToken           String?          @unique
+  emailConfirmTokenExpiresAt  DateTime?
+  resetPasswordToken          String?          @unique
+  resetPasswordTokenExpiresAt DateTime?
+  cart_items                  cart_items[]
+  orders                      orders[]
+  refresh_tokens              refresh_tokens[]
+  special_offers              special_offers[]
+}
+
+enum DeviceType {
+  MOBILE
+  TABLET
 }
 
 enum OfferCategory {
   HEAVY
   MEDIUM
   LIGHT
-}
-
-enum ProductType {
-  PHONE
-  PACKAGE
-  BUNDLE
-  ALL
 }
 
 enum OrderStatus {
@@ -41,187 +186,21 @@ enum PackageType {
   COMBO
 }
 
-enum DeviceTypes {
-  MOBILE
-  TABLET
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
 }
 
-
-model User {
-  id               Int           @id @default(autoincrement())
-  email            String        @unique
-  name             String
-  password         String
-  role             Role          @default(CUSTOMER)
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-
-  // Email confirmation
-  isEmailConfirmed Boolean       @default(false)
-  emailConfirmToken String?     @unique
-  emailConfirmTokenExpiresAt DateTime?
-
-  // Password reset
-  resetPasswordToken       String?     @unique
-  resetPasswordTokenExpiresAt DateTime?
-
-  // Relations
-  orders           Order[]
-  refreshTokens    RefreshToken[]
-  specialOffers    SpecialOffer[]
-  cartItems        CartItem[]
+enum ProductType {
+  PHONE
+  PACKAGE
+  BUNDLE
+  ALL
 }
 
-model Phone {
-  id            Int           @id @default(autoincrement())
-  name          String
-  brand         String
-  price         Float
-  rating        Float?
-  type         ProductType  @default(PHONE) // Type of the product
-  deviceTypes   DeviceTypes  @default(MOBILE) // Device type (e.g., MOBILE, TABLET)
-  imgUrl        String
-  description   String?
-  stock         Int           @default(0)
-  isActive      Boolean       @default(true)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  
-  // Relations
-  orderItems    OrderItem[]
-  specialOffers SpecialOffer[]
-  cartItems     CartItem[]
-  bundleItems   BundleItem[]
-}
-
-model Package {
-  id            Int           @id @default(autoincrement())
-  name          String
-  description   String?
-  price         Float
-  imgUrl        String?
-  rating        Float?
-  isActive      Boolean       @default(true)
-  type           ProductType  @default(PACKAGE) // Type of the package
-  packageType  PackageType   @default(MOBILE) // Type of the package (e.g., MOBILE, BROADBAND, TABLET, COMBO)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  
-  // Relations
-  orderItems    OrderItem[]
-  specialOffers SpecialOffer[]
-  cartItems     CartItem[]
-  bundleItems   BundleItem[]
-}
-
-// New model for phone+package bundles
-model Bundle {
-  id            Int           @id @default(autoincrement())
-  name          String
-  description   String?
-imgUrl        String?
-  price         Float         // Bundle price (can be less than individual prices)
-  rating        Float?
-  isActive      Boolean       @default(true)
-  type       ProductType  @default(BUNDLE) // Type of the bundle    
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  
-  // Relations
-  bundleItems   BundleItem[]
-  orderItems    OrderItem[]
-  cartItems     CartItem[]
-  specialOffers SpecialOffer[]
-}
-
-// Junction table for bundle contents
-model BundleItem {
-  id         Int      @id @default(autoincrement())
-  bundleId   Int
-  phoneId    Int?
-  packageId  Int?
-  quantity   Int      @default(1)
-  
-  bundle     Bundle   @relation(fields: [bundleId], references: [id], onDelete: Cascade)
-  phone      Phone?   @relation(fields: [phoneId], references: [id], onDelete: Cascade)
-  package    Package? @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  
-  @@unique([bundleId, phoneId, packageId])
-}
-
-model Order {
-  id            Int          @id @default(autoincrement())
-  orderNumber   String       @unique
-  userId        Int
-  totalAmount   Float
-  status        OrderStatus  @default(PENDING)
-  shippingAddress String?
-  billingAddress  String?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  
-  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orderItems    OrderItem[]
-}
-
-model OrderItem {
-  id          Int      @id @default(autoincrement())
-  orderId     Int
-  phoneId     Int?
-  packageId   Int?
-  bundleId    Int?
-  quantity    Int      @default(1)
-  unitPrice   Float
-  totalPrice  Float
-  
-  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  phone       Phone?   @relation(fields: [phoneId], references: [id], onDelete: Restrict)
-  package     Package? @relation(fields: [packageId], references: [id], onDelete: Restrict)
-  bundle      Bundle?  @relation(fields: [bundleId], references: [id], onDelete: Restrict)
-}
-
-model CartItem {
-  id          Int      @id @default(autoincrement())
-  userId      Int
-  phoneId     Int?
-  packageId   Int?
-  bundleId    Int?
-  quantity    Int      @default(1)
-  createdAt   DateTime @default(now())
-  
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  phone       Phone?   @relation(fields: [phoneId], references: [id], onDelete: Cascade)
-  package     Package? @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  bundle      Bundle?  @relation(fields: [bundleId], references: [id], onDelete: Cascade)
-  
-  @@unique([userId, phoneId, packageId, bundleId])
-}
-
-model RefreshToken {
-  id        Int      @id @default(autoincrement())
-  token     String   @unique
-  userId    Int
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model SpecialOffer {
-  id          Int          @id @default(autoincrement())
-  name        String
-  description String?
-  category    OfferCategory
-  discount    Float        // Discount percentage (e.g., 0.2 for 20%)
-  userId      Int
-  phoneId     Int?
-  packageId   Int?
-  bundleId    Int?
-  isActive    Boolean       @default(true)
-  createdAt   DateTime     @default(now())
-  expiresAt   DateTime
-  
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  phone       Phone?       @relation(fields: [phoneId], references: [id], onDelete: SetNull)
-  package     Package?     @relation(fields: [packageId], references: [id], onDelete: SetNull)
-  bundle      Bundle?      @relation(fields: [bundleId], references: [id], onDelete: SetNull)
+enum Role {
+  CUSTOMER
+  ADMIN
 }

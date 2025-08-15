@@ -1,5 +1,5 @@
 {
-  "editor.tabSize": 4,
+  "editor.tabSize": 6,
 //   "editor.detectIndentation": false,
   "search.exclude": {
     "package-lock.json": true
@@ -24,7 +24,7 @@
     "source.addMissingImports.ts": "always",
     "source.removeUnusedImports": "explicit"
   },
-  "editor.autoIndent": "full",
+  // "editor.autoIndent": "full",
 
   // Enable eslint for all supported languages
   "eslint.validate": [

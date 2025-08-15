@@ -3,7 +3,6 @@ import {
   UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import console from 'console';
 import type { LoginDTO, RegisterDTO } from 'src/routes/auth/auth.dto';
 import { isNotFoundPrismaError } from 'src/shared/helpers';
 import { EmailService } from 'src/shared/services/email.service';
@@ -21,10 +20,10 @@ export class AuthService {
   ) {}
   async register(body: RegisterDTO) {
     const hashedPassword = await this.hashingService.hash(body.password);
-    const isUserExist = await this.prismaService.user.findUnique({
+
+    const isUserExist = await this.prismaService.users.findUnique({
       where: { email: body.email },
     });
-    console.log(isUserExist);
 
     if (isUserExist) {
       throw new UnprocessableEntityException([
@@ -35,9 +34,10 @@ export class AuthService {
       ]);
     }
 
-    await this.prismaService.user.create({
+    await this.prismaService.users.create({
       data: {
         email: body.email,
+        updatedAt: new Date(),
         name: body.name,
         password: hashedPassword,
         role: 'CUSTOMER',
@@ -49,7 +49,7 @@ export class AuthService {
     return { success: true };
   }
   async login(body: LoginDTO) {
-    const user = await this.prismaService.user.findUnique({
+    const user = await this.prismaService.users.findUnique({
       where: { email: body.email },
     });
 
@@ -85,7 +85,7 @@ export class AuthService {
     try {
       // 1 verify refresh token
       await this.tokenService.verifyRefreshToken(refreshToken);
-      await this.prismaService.refreshToken.delete({
+      await this.prismaService.refresh_tokens.delete({
         where: {
           token: refreshToken,
         },
@@ -100,7 +100,7 @@ export class AuthService {
   }
 
   async sendEmail(email: string) {
-    const user = await this.prismaService.user.findUnique({
+    const user = await this.prismaService.users.findUnique({
       where: { email },
     });
     // Check if user exists
@@ -134,7 +134,7 @@ export class AuthService {
   }
 
   async verifyEmail(emailConfirmToken: string) {
-    const user = await this.prismaService.user.findFirst({
+    const user = await this.prismaService.users.findFirst({
       where: {
         emailConfirmToken,
       },
@@ -155,7 +155,7 @@ export class AuthService {
       );
     }
 
-    await this.prismaService.user.update({
+    await this.prismaService.users.update({
       where: { id: user.id },
       data: {
         isEmailConfirmed: true,
@@ -168,7 +168,7 @@ export class AuthService {
   }
 
   async forgotPassword(email: string) {
-    const user = await this.prismaService.user.findUnique({
+    const user = await this.prismaService.users.findUnique({
       where: { email },
     });
 
@@ -179,7 +179,7 @@ export class AuthService {
     const forgotPasswordToken = uuidv4();
     const forgotPasswordTokenExpiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
-    await this.prismaService.user.update({
+    await this.prismaService.users.update({
       where: { id: user.id },
       data: {
         resetPasswordToken: forgotPasswordToken,
@@ -202,7 +202,7 @@ export class AuthService {
   }
 
   async verifyPassword(resetPasswordToken: string) {
-    const user = await this.prismaService.user.findFirst({
+    const user = await this.prismaService.users.findFirst({
       where: {
         resetPasswordToken,
       },
@@ -230,7 +230,7 @@ export class AuthService {
   }
 
   async newPassword(password: string, resetPasswordToken: string) {
-    const user = await this.prismaService.user.findFirst({
+    const user = await this.prismaService.users.findFirst({
       where: {
         resetPasswordToken,
       },
@@ -253,7 +253,7 @@ export class AuthService {
 
     const hashedPassword = await this.hashingService.hash(password);
 
-    await this.prismaService.user.update({
+    await this.prismaService.users.update({
       where: { id: user.id },
       data: {
         password: hashedPassword,
@@ -271,20 +271,20 @@ export class AuthService {
       const { userId, isVerified, role } =
         await this.tokenService.verifyRefreshToken(refreshToken);
       const storedToken =
-        await this.prismaService.refreshToken.findUniqueOrThrow({
+        await this.prismaService.refresh_tokens.findUniqueOrThrow({
           where: {
             token: refreshToken,
           },
         });
 
       if (new Date() > storedToken.expiresAt) {
-        await this.prismaService.refreshToken.delete({
+        await this.prismaService.refresh_tokens.delete({
           where: { token: refreshToken },
         });
         throw new UnauthorizedException('Refresh token expired');
       }
 
-      await this.prismaService.refreshToken.delete({
+      await this.prismaService.refresh_tokens.delete({
         where: {
           token: refreshToken,
         },
@@ -309,7 +309,7 @@ export class AuthService {
     ]);
     const decodedRefreshToken =
       await this.tokenService.verifyRefreshToken(refreshToken);
-    await this.prismaService.refreshToken.create({
+    await this.prismaService.refresh_tokens.create({
       data: {
         token: refreshToken,
         userId: payload.userId,

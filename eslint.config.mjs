@@ -36,6 +36,8 @@ export default tseslint.config(
       'no-multi-spaces': 1,
       'no-multiple-empty-lines': 1,
       'no-irregular-whitespace': 0,
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      'pretier/prettier': 'off',
       'space-before-blocks': ['warn', 'always'],
       'object-curly-spacing': [1, 'always'],
       'quotes': ['warn', 'single'],
