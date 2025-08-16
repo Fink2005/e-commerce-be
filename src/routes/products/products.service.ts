@@ -20,9 +20,9 @@ export class ProductsService {
       });
       return bundles;
     } else if (productType === ProductType.ALL) {
-      return this.prisma.product.findMany();
+      return await this.prisma.product.findMany();
     }
-    return this.prisma.product.findMany({
+    return await this.prisma.product.findMany({
       where: {
         type: productType,
       },

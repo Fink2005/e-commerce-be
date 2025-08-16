@@ -24,7 +24,8 @@ export class ProductsController {
   @ApiOperation({ summary: 'Get all products' })
   @ApiQuery({ name: 'productType', enum: ProductType, required: false })
   @ApiResponse({ status: 200, type: [ProductResDTO] })
-  async getProducts(@Query('productType') productType: ProductType) {
+  async getProducts(@Query('productType') productType?: ProductType) {
+    console.log(productType);
     return await this.productService.getProducts(productType);
   }
 
