@@ -34,7 +34,6 @@ export class ProductsController {
   @ApiOperation({ summary: 'Create a new product (phone, package, or bundle)' })
   @ApiResponse({ status: 201, type: ProductResDTO })
   async createProduct(@Body() body: ProductCreateDTO) {
-    console.log(user);
     return await this.productService.createProduct(body);
   }
 
