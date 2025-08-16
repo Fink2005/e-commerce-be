@@ -9,6 +9,16 @@ import { TokenPayload } from 'src/shared/types/jwt.type';
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+  @ApiOperation({ summary: 'Get all users data' })
+  @ApiResponse({
+    status: 200,
+    description: 'Get all users info',
+    type: userDTO,
+  })
+  @Get()
+  async getUsers() {
+    return await this.userService.getUsers();
+  }
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get your info data' })
   @ApiResponse({

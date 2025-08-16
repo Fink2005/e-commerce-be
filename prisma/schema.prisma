@@ -184,9 +184,8 @@ enum OrderStatus {
 
 enum PackageType {
   MOBILE
-  BROADBANDData
+  BROADBAND
   TABLET
-  COMBO
 }
 
 enum PaymentStatus {
