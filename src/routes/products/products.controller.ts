@@ -6,6 +6,7 @@ import {
   ParseIntPipe,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ProductType } from '@prisma/client';
@@ -14,6 +15,7 @@ import {
   ProductResDTO,
 } from 'src/routes/products/products.dto';
 import { ProductsService } from 'src/routes/products/products.service';
+import { AccessTokenGuard } from 'src/shared/guards/access1-token.guard';
 
 @ApiTags('Products')
 @Controller('products')
@@ -25,14 +27,14 @@ export class ProductsController {
   @ApiQuery({ name: 'productType', enum: ProductType, required: false })
   @ApiResponse({ status: 200, type: [ProductResDTO] })
   async getProducts(@Query('productType') productType?: ProductType) {
-    console.log(productType);
     return await this.productService.getProducts(productType);
   }
-
+  @UseGuards(AccessTokenGuard)
   @Post()
   @ApiOperation({ summary: 'Create a new product (phone, package, or bundle)' })
   @ApiResponse({ status: 201, type: ProductResDTO })
   async createProduct(@Body() body: ProductCreateDTO) {
+    console.log(user);
     return await this.productService.createProduct(body);
   }
 
