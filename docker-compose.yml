@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: e-commerce-db
+    restart: always
+    environment:
+      POSTGRES_USER: Fink
+      POSTGRES_PASSWORD: Phantansy@123
+      POSTGRES_DB: e-commerce-db
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
